@@ -1,95 +1,198 @@
-<div align="center">
-  <a href="http://netflix-clone-with-tmdb-using-react-mui.vercel.app/">
-    <img src="./public/assets/netflix-logo.png" alt="Logo" width="100" height="32">
-  </a>
+# 🎬 Netflix Clone – End-to-End DevSecOps CI/CD Pipeline
 
-  <h3 align="center">Netflix Clone</h3>
+A production-style DevSecOps pipeline that builds, secures, and deploys a **Netflix Clone** application to **AWS EKS**, with full observability via **Prometheus** and **Grafana**.
 
-  <p align="center">
-    <a href="https://netflix-clone-react-typescript.vercel.app/">View Demo</a>
-    ·
-    <a href="https://github.com/crazy-man22/netflix-clone-react-typescript/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/crazy-man22/netflix-clone-react-typescript/issues">Request Feature</a>
-  </p>
-</div>
+The pipeline integrates **Jenkins, SonarQube, Trivy, OWASP Dependency-Check, Docker, Terraform, and Kubernetes** to demonstrate a real-world CI/CD + DevSecOps + Monitoring workflow.
 
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#prerequests">Prerequests</a>
-    </li>
-    <li>
-      <a href="#which-features-this-project-deals-with">Which features this project deals with</a>
-    </li>
-    <li><a href="#third-party-libraries-used-except-for-react-and-rtk">Third Party libraries used except for React and RTK</a></li>
-    <li>
-      <a href="#contact">Contact</a>
-    </li>
-  </ol>
-</details>
+---
 
-<br />
+## 🧰 Tech Stack
 
-<div align="center">
-  <img src="./public/assets/home-page.png" alt="Logo" width="100%" height="100%">
-  <p align="center">Home Page</p>
-  <img src="./public/assets/mini-portal.png" alt="Logo" width="100%" height="100%">
-  <p align="center">Mini Portal</p>
-  <img src="./public/assets/detail-modal.png" alt="Logo" width="100%" height="100%">
-  <p align="center">Detail Modal</p>
-  <img src="./public/assets/grid-genre.png" alt="Logo" width="100%" height="100%">
-  <p align="center">Grid Genre Page</p>
-  <img src="./public/assets/watch.png" alt="Logo" width="100%" height="100%">
-  <p align="center">Watch Page with customer contol bar</p>
-</div>
+| Category            | Tools / Services                                   |
+|----------------------|-----------------------------------------------------|
+| CI/CD                | Jenkins (Declarative Pipeline)                       |
+| Infra as Code         | Terraform (AWS EKS provisioning)                     |
+| Cloud                 | AWS (EC2, EKS, S3, IAM, ELB, Security Groups)        |
+| Containerization       | Docker, Docker Hub                                   |
+| Orchestration          | Kubernetes (AWS EKS)                                 |
+| Code Quality           | SonarQube                                            |
+| Security Scanning      | Trivy (FS & Image Scan), OWASP Dependency-Check        |
+| Monitoring             | Prometheus, Node Exporter, Grafana                    |
+| Notifications           | Jenkins Email Extension (Gmail SMTP)                  |
+| Data Source             | TMDB API (movie data)                                 |
 
-## Prerequests
+---
 
-- Create an account if you don't have on [TMDB](https://www.themoviedb.org/).
-  Because I use its free API to consume movie/tv data.
-- And then follow the [documentation](https://developers.themoviedb.org/3/getting-started/introduction) to create API Key
-- Finally, if you use v3 of TMDB API, create a file named `.env`, and copy and paste the content of `.env.example`.
-  And then paste the API Key you just created.
+## 🏗️ Architecture Overview
 
-## Which features this project deal with
+1. Code is pushed to GitHub.
+2. Jenkins pipeline pulls the code, runs a **SonarQube** static code analysis + quality gate.
+3. **OWASP Dependency-Check** and **Trivy (filesystem scan)** scan for vulnerable dependencies.
+4. Docker image is built, tagged, and pushed to **Docker Hub**.
+5. **Trivy** scans the built image for vulnerabilities.
+6. The application is deployed to an **AWS EKS** cluster (provisioned via a separate Terraform pipeline) using `kubectl apply`.
+7. **Prometheus + Node Exporter** scrape metrics from Jenkins and the servers; **Grafana** visualizes them on dashboards.
+8. Jenkins sends build status emails at the end of every run.
 
-- How to create and use [Custom Hooks](https://reactjs.org/docs/hooks-custom.html)
-- How to use [Context](https://reactjs.org/docs/context.html) and its provider
-- How to use lazy and Suspense for [Code-Splitting](https://reactjs.org/docs/code-splitting.html)
-- How to use a new [lazy](https://reactrouter.com/en/main/route/lazy) feature of react-router to reduce bundle size.
-- How to use data [loader](https://reactrouter.com/en/main/route/loader) of react-router, and how to use redux dispatch in the loader to fetch data before rendering component.
-- How to use [Portal](https://reactjs.org/docs/portals.html)
-- How to use [Fowarding Refs](https://reactjs.org/docs/forwarding-refs.html) to make components reusuable
-- How to create and use [HOC](https://reactjs.org/docs/higher-order-components.html)
-- How to customize default theme of [MUI](https://mui.com/)
-- How to use [RTK](https://redux-toolkit.js.org/introduction/getting-started)
-- How to use [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)
-- How to customize default classname of [MUI](https://mui.com/material-ui/experimental-api/classname-generator)
-- Infinite Scrolling(using [Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API))
-- How to make awesome carousel using [slick-carousel](https://react-slick.neostack.com)
+---
 
-## Third Party libraries used except for React and RTK
+## 📋 Prerequisites
 
-- [react-router-dom@v6.9](https://reactrouter.com/en/main)
-- [MUI(Material UI)](https://mui.com/)
-- [framer-motion](https://www.framer.com/docs/)
-- [video.js](https://videojs.com)
-- [react-slick](https://react-slick.neostack.com/)
+- AWS account with an IAM role/user that has admin (or scoped EKS/EC2/S3) permissions
+- A **TMDB API key** ([themoviedb.org](https://www.themoviedb.org/) → Settings → API)
+- A Docker Hub account
+- A Gmail account with an **App Password** (for Jenkins email notifications)
+- Domain/DNS not required — accessed via public IP / LoadBalancer
 
-## Install with Docker
+> ⚠️ **Security note:** Never commit real API keys, SMTP passwords, or SonarQube tokens to this repo. Store them as **Jenkins Credentials** and reference them by ID, as shown in the pipeline stages below.
 
-```sh
-docker build --build-arg TMDB_V3_API_KEY=your_api_key_here -t netflix-clone .
+---
 
-docker run --name netflix-clone-website --rm -d -p 80:80 netflix-clone
+## 🚀 Setup Walkthrough
+
+### Step 1 – Provision the Jenkins/Build EC2 Instance
+Launch an **Ubuntu 22/24.04, t2.large, 30GB** EC2 instance and attach an IAM role with the required permissions.
+
+Install core tooling via script:
+- **Terraform**
+- **kubectl**
+- **AWS CLI**
+
+### Step 2 – Install Jenkins, Docker, Trivy & SonarQube
+- Install **Java (Temurin 17)** and **Jenkins**, start the Jenkins service (`:8080`)
+- Install **Docker**, add the `jenkins`/`ubuntu` user to the `docker` group
+- Install **Trivy** for vulnerability scanning
+- Run **SonarQube** as a Docker container (`:9000`)
+
+### Step 3 – TMDB API Key
+Sign up on TMDB → Settings → API → create a developer application to get an API key used at Docker build time (`TMDB_V3_API_KEY`).
+
+### Step 4 – Monitoring Stack (separate EC2 – t2.medium)
+- Install **Prometheus** (`:9090`) as a systemd service
+- Install **Node Exporter** (`:9100`) and register it as a Prometheus scrape target
+- Install **Grafana** (`:3000`), connect it to Prometheus as a data source, and import dashboard **ID 1860** (Node Exporter)
+
+### Step 5 – Jenkins ↔ Prometheus Integration
+- Install the **Prometheus plugin** in Jenkins
+- Add Jenkins as a scrape target (`/prometheus` metrics path) in `prometheus.yml`
+- Import Grafana dashboard **ID 9964** (Jenkins metrics)
+
+### Step 6 – Email Notifications
+- Install the **Email Extension** plugin
+- Configure Gmail SMTP (`smtp.gmail.com:465`, SSL) using a Gmail **App Password** stored in Jenkins Credentials
+- Set default triggers: `Always`, `Failure - Any`
+
+### Step 7 – Jenkins Tooling & Plugins
+Install and configure:
+- Eclipse Temurin Installer (JDK)
+- SonarQube Scanner plugin
+- NodeJS plugin
+- Docker / Docker Pipeline / Docker Commons / Docker API plugins
+
+Configure JDK, SonarQube Scanner, and NodeJS tool auto-installers under **Manage Jenkins → Tools**.
+
+Connect SonarQube ↔ Jenkins via a **Secret Text** credential (`sonar-token`) and a webhook back to Jenkins (`/sonarqube-webhook/`).
+
+### Step 8 – CI Pipeline (Build & Quality Gate)
+A **Declarative Pipeline** that:
+1. Cleans workspace & checks out from GitHub
+2. Runs SonarQube analysis + quality gate
+3. Installs project dependencies (`npm install`)
+
+### Step 9 – Security Scans
+- **OWASP Dependency-Check** plugin installed and integrated into the pipeline
+- **Trivy filesystem scan** (`trivy fs .`) run before the Docker build
+
+### Step 10 – Docker Build, Scan & Push
+- Docker Hub credentials added to Jenkins (`ID: docker`)
+- Pipeline builds the image with the TMDB API key as a build arg, tags it, and pushes to Docker Hub
+- **Trivy image scan** run against the pushed image
+- Scan reports (`trivyfs.txt`, `trivyimage.txt`) attached to the build email
+
+### Step 11 – EKS Cluster Provisioning (Terraform, via Jenkins)
+A separate **parameterized pipeline** (`action`: `apply` / `destroy`) that:
+1. Checks out the Terraform config (`EKS_TERRAFORM/` directory)
+2. Runs `terraform init → validate → plan → apply/destroy`
+3. Provisions the AWS EKS cluster (state stored in a private S3 bucket)
+
+After provisioning:
+```
+aws eks update-kubeconfig --region <region> --name <cluster-name>
+kubectl get nodes
 ```
 
-## Todo
+### Step 12 – Kubernetes Deployment
+- Kubernetes plugin + credentials (kubeconfig saved as a Jenkins **Secret File**, `ID: k8s`) added
+- Final pipeline adds a **Deploy to Kubernetes** stage:
+  ```
+  kubectl apply -f deployment.yml
+  kubectl apply -f service.yml
+  ```
+- Manifests live under the `Kubernetes/` directory in this repo
 
-- Make the animation of video card portal more similar to Netflix.
-- Improve performance. I am using `context` and `provider` but all components subscribed to the context's value are re-rendered. These re-renders happen even if the part of the value is not used in render of the component. there are [several ways](https://blog.axlight.com/posts/4-options-to-prevent-extra-rerenders-with-react-context/) to prevent the re-renders from these behaviours. In addition to them, there may be several performance issues.
-- Replace bundler([Vite](https://vitejs.dev/guide)) with [Turbopack](https://turbo.build/pack/docs/why-turbopack). Turbopack is introduced in Next.js conf recently. It's very fast but it's nor ready to use right now. it just support Next.js, and they plan to support all others as soon as possible. so if it's ready to use, replace [Vite](https://vitejs.dev/guide) with [Turbopack](https://turbo.build/pack/docs/why-turbopack).
-- Add accessibilities for better UX.
-- Add Tests.
+### Step 13 – Access the Application
+Retrieve the LoadBalancer/service URL:
+```
+kubectl get svc
+```
+Open the returned endpoint in your browser to view the deployed Netflix Clone.
+
+### Step 14 – Teardown
+To avoid ongoing AWS charges:
+```
+# Destroy the EKS cluster via the Terraform Jenkins pipeline (action = destroy)
+```
+Then manually:
+- Terminate the Jenkins/build EC2 instance
+- Terminate the Prometheus/Grafana EC2 instance
+- Delete any leftover Load Balancers and Security Groups
+
+---
+
+## 📊 Monitoring Dashboards
+
+| Dashboard      | Source              | Dashboard ID |
+|-----------------|----------------------|--------------|
+| Node Exporter   | Server-level metrics | `1860`       |
+| Jenkins         | CI/CD pipeline metrics | `9964`     |
+
+---
+
+## 📁 Repository Structure
+
+```
+.
+├── EKS_TERRAFORM/         # Terraform code to provision the AWS EKS cluster
+├── Kubernetes/            # deployment.yml & service.yml manifests
+├── netflix_deployment_proof/   # 📸 Screenshots/proof of the working deployment 
+├── Dockerfile
+└── README.md
+```
+
+> 📌 **Note:** The `netflix_deployment_proof` folder is contain proof of the working setup (Jenkins pipeline runs, SonarQube reports, Trivy scan outputs, Grafana dashboards, and the live app) .
+
+---
+
+## 🔐 Credentials Used in Jenkins (reference only — configure your own)
+
+| Credential ID   | Kind                 | Purpose                          |
+|-------------------|----------------------|-----------------------------------|
+| `docker`          | Username & Password  | Docker Hub push access             |
+| `sonar-token`      | Secret Text           | SonarQube authentication            |
+| `mail`             | Username & Password  | Gmail SMTP for build notifications  |
+| `k8s`              | Secret File           | Kubeconfig for EKS deployment        |
+
+---
+
+## 🙋 Author
+
+**Mayur Patil**
+DevOps & Cloud Enthusiast 
+
+GitHub: [@mayurpatil0708](https://github.com/mayurpatil0708)
+
+---
+
+## 📄 License
+
+This project is intended for learning and portfolio purposes.
